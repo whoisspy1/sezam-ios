@@ -1,0 +1,15 @@
+# Capacitor generates the native iOS project in CI (npx cap add ios).
+# Do NOT commit it — otherwise `cap add ios` fails with "already exists".
+/ios/
+/android/
+
+# deps & build output
+/node_modules/
+/build/
+Payload/
+*.ipa
+*.xcarchive
+
+# misc
+.DS_Store
+npm-debug.log*

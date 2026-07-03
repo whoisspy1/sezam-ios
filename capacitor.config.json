@@ -1,0 +1,13 @@
+{
+  "appId": "com.sezam.smarthome",
+  "appName": "SEZAM Smart Home",
+  "webDir": "www",
+  "server": {
+    "iosScheme": "capacitor",
+    "allowNavigation": ["*"]
+  },
+  "ios": {
+    "contentInset": "always",
+    "limitsNavigationsToAppBoundDomains": false
+  }
+}

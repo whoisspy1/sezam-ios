@@ -1,0 +1,87 @@
+name: Build unsigned iOS IPA
+
+# Builds SEZAM Smart Home as an UNSIGNED .ipa on a cloud macOS runner.
+# No Mac and no $99 Apple Developer account needed to build — you sign it on
+# install with AltStore / SideStore using a free Apple ID.
+#
+# Run it: push to the repo, or Actions tab -> "Build unsigned iOS IPA" -> Run workflow.
+# Then download the "SEZAM-ios-ipa" artifact from the finished run.
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install JS deps
+        run: npm install
+
+      - name: Add iOS platform (generates ios/ project)
+        run: npx cap add ios
+
+      - name: Inject SEZAM native controller
+        run: |
+          # Append our bridge view controller into the app's AppDelegate.swift
+          # (already part of the App target — no .pbxproj surgery needed).
+          printf '\n\n' >> ios/App/App/AppDelegate.swift
+          cat ios-native/SezamViewController.swift >> ios/App/App/AppDelegate.swift
+
+      - name: Point storyboard at SezamViewController
+        run: |
+          SB="ios/App/App/Base.lproj/Main.storyboard"
+          sed -i '' 's/CAPBridgeViewController/SezamViewController/g' "$SB"
+          sed -i '' 's/customModule="Capacitor"/customModule="App" customModuleProvider="target"/g' "$SB"
+          echo "----- storyboard viewController line -----"
+          grep -n "SezamViewController" "$SB" || (echo "PATCH FAILED" && exit 1)
+
+      - name: Allow local http (App Transport Security)
+        run: |
+          PL="ios/App/App/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$PL" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PL" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Print :NSAppTransportSecurity" "$PL"
+
+      - name: Sync web assets + pods
+        run: |
+          npx cap sync ios
+          cd ios/App && pod install
+
+      - name: Build unsigned .app
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package into IPA
+        run: |
+          APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -n1)
+          echo "App bundle: $APP"
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry SEZAM-Smart-Home.ipa Payload
+          ls -lh SEZAM-Smart-Home.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SEZAM-ios-ipa
+          path: SEZAM-Smart-Home.ipa
+          if-no-files-found: error

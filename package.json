@@ -1,0 +1,17 @@
+{
+  "name": "sezam-smart-home-ios",
+  "version": "1.0.5",
+  "description": "SEZAM Smart Home — iOS WebView wrapper (Capacitor) for Home Assistant white-label",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync ios",
+    "open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}

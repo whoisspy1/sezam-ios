@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>SEZAM</title>
+<style>
+  :root{ --orange:#E0380C; --blue:#1976D2; --dark:#1B1B1B; --white:#fff; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; height:100%; background:var(--white); color:var(--dark);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  body{ display:flex; flex-direction:column; padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom); }
+  /* language bar */
+  .langbar{ display:flex; justify-content:center; align-items:center; gap:6px;
+    padding:6px 0; border-bottom:1px solid #E0E0E0; }
+  .langbar span{ padding:6px; font-size:14px; font-weight:700; cursor:pointer; color:var(--dark); }
+  .langbar span.active{ color:var(--orange); }
+  .langbar .sep{ font-weight:400; color:var(--dark); cursor:default; }
+  /* chooser */
+  .chooser{ flex:1; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:24px 32px; text-align:center; }
+  .logo{ width:170px; height:170px; object-fit:contain; }
+  .brand{ margin-top:8px; font-size:22px; font-weight:700; }
+  .prompt{ margin-top:24px; font-size:16px; }
+  .btn{ width:100%; max-width:420px; border:none; color:var(--white); font-size:16px;
+    font-weight:600; padding:14px 12px; margin-top:14px; border-radius:6px; cursor:pointer; }
+  .btn-online{ background:var(--orange); }
+  .btn-local{ background:var(--blue); margin-top:12px; }
+  .link{ color:var(--orange); font-size:14px; padding:8px; margin-top:6px; cursor:pointer; }
+  .credit{ margin-top:28px; font-size:13px; color:var(--dark); }
+  .ver{ margin-top:6px; font-size:13px; color:var(--dark); }
+  /* editor modal */
+  .modal{ position:fixed; inset:0; background:var(--white); display:none;
+    flex-direction:column; padding:28px 24px; padding-top:calc(env(safe-area-inset-top) + 28px); }
+  .modal.show{ display:flex; }
+  .modal h2{ font-size:18px; margin:0 0 18px; }
+  .modal label{ font-size:14px; color:var(--dark); }
+  .modal input{ width:100%; font-size:16px; padding:12px; margin-top:8px;
+    border:1px solid #ccc; border-radius:6px; }
+  .modal .note{ font-size:12px; color:#666; margin-top:12px; line-height:1.4; }
+  .modal-row{ display:flex; gap:12px; margin-top:22px; }
+  .modal-row .btn{ margin-top:0; }
+  .btn-back{ background:#888; }
+</style>
+</head>
+<body>
+  <div class="langbar" id="langbar">
+    <span data-lang="tk">Türkmençe</span><span class="sep">|</span>
+    <span data-lang="ru">Русский</span><span class="sep">|</span>
+    <span data-lang="en">English</span>
+  </div>
+
+  <div class="chooser" id="chooser">
+    <img class="logo" id="logo" alt="SEZAM">
+    <div class="brand" id="brand"></div>
+    <div class="prompt" id="prompt"></div>
+    <button class="btn btn-online" id="btnOnline"></button>
+    <div class="link" id="editOnline"></div>
+    <button class="btn btn-local" id="btnLocal"></button>
+    <div class="link" id="editLocal"></div>
+    <div class="credit" id="credit"></div>
+    <div class="ver" id="ver"></div>
+  </div>
+
+  <div class="modal" id="modal">
+    <h2 id="modalTitle"></h2>
+    <label id="modalLabel"></label>
+    <input id="modalInput" type="url" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <div class="note" id="modalNote"></div>
+    <div class="modal-row">
+      <button class="btn btn-back" id="modalBack" style="flex:1"></button>
+      <button class="btn btn-online" id="modalSave" style="flex:2"></button>
+    </div>
+  </div>
+
+<script src="app.js"></script>
+</body>
+</html>
