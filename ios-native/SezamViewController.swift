@@ -19,6 +19,23 @@ class SezamViewController: CAPBridgeViewController, WKScriptMessageHandler {
 
     override func capacitorDidLoad() {
         super.capacitorDidLoad()
+
+        // Dark background everywhere so overscroll / safe-area areas never flash
+        // white behind the Home Assistant page.
+        let dark = UIColor(red: 0.106, green: 0.106, blue: 0.106, alpha: 1.0) // #1B1B1B
+        self.view.backgroundColor = dark
+        if let wv = bridge?.webView {
+            wv.isOpaque = true
+            wv.backgroundColor = dark
+            wv.scrollView.backgroundColor = dark
+            // Let the Home Assistant page handle safe areas itself (it uses
+            // viewport-fit=cover + env(safe-area-inset-*)). Prevents the double
+            // top gap and keeps taps aligned with what's drawn.
+            if #available(iOS 11.0, *) {
+                wv.scrollView.contentInsetAdjustmentBehavior = .never
+            }
+        }
+
         guard let ucc = bridge?.webView?.configuration.userContentController else { return }
 
         // Bridge from the chooser page.

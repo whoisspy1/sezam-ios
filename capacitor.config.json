@@ -2,12 +2,14 @@
   "appId": "com.sezam.smarthome",
   "appName": "SEZAM Smart Home",
   "webDir": "www",
+  "backgroundColor": "#1b1b1b",
   "server": {
     "iosScheme": "capacitor",
     "allowNavigation": ["*"]
   },
   "ios": {
-    "contentInset": "always",
+    "contentInset": "never",
+    "backgroundColor": "#1b1b1b",
     "limitsNavigationsToAppBoundDomains": false
   }
 }
