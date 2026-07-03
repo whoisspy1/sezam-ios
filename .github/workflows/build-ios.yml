@@ -37,6 +37,14 @@ jobs:
           printf '\n\n' >> ios/App/App/AppDelegate.swift
           cat ios-native/SezamViewController.swift >> ios/App/App/AppDelegate.swift
 
+      - name: Set SEZAM app icon and splash
+        run: |
+          ICONSET="ios/App/App/Assets.xcassets/AppIcon.appiconset"
+          SPLASH="ios/App/App/Assets.xcassets/Splash.imageset"
+          cp resources/AppIcon-1024.png "$ICONSET/AppIcon-512@2x.png"
+          for f in "$SPLASH"/*.png; do cp resources/Splash-2732.png "$f"; done
+          echo "icon + splash replaced:"; ls -la "$ICONSET" "$SPLASH"
+
       - name: Point storyboard at SezamViewController
         run: |
           SB="ios/App/App/Base.lproj/Main.storyboard"
