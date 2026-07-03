@@ -1,0 +1,61 @@
+# Codemagic build — alternative to GitHub Actions.
+# Use this if GitHub Actions is locked on your account.
+# Sign up at codemagic.io (login with GitHub), add this repo, run the
+# "ios-unsigned" workflow, then download the SEZAM-Smart-Home.ipa artifact.
+# Builds an UNSIGNED IPA — you sign it on install with AltStore (free Apple ID).
+
+workflows:
+  ios-unsigned:
+    name: SEZAM Smart Home — unsigned IPA
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      node: 20
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install JS deps
+        script: npm install
+      - name: Add iOS platform
+        script: npx cap add ios
+      - name: Inject SEZAM native controller
+        script: |
+          printf '\n\n' >> ios/App/App/AppDelegate.swift
+          cat ios-native/SezamViewController.swift >> ios/App/App/AppDelegate.swift
+      - name: Point storyboard at SezamViewController
+        script: |
+          SB="ios/App/App/Base.lproj/Main.storyboard"
+          sed -i '' 's/CAPBridgeViewController/SezamViewController/g' "$SB"
+          sed -i '' 's/customModule="Capacitor"/customModule="App" customModuleProvider="target"/g' "$SB"
+          grep -q "SezamViewController" "$SB" || { echo "storyboard patch failed"; exit 1; }
+      - name: Allow local http (ATS)
+        script: |
+          PL="ios/App/App/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$PL" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PL" 2>/dev/null || true
+      - name: Sync web assets + pods
+        script: |
+          npx cap sync ios
+          cd ios/App && pod install
+      - name: Build unsigned .app
+        script: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+      - name: Package into IPA
+        script: |
+          APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -n1)
+          echo "App bundle: $APP"
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry SEZAM-Smart-Home.ipa Payload
+          ls -lh SEZAM-Smart-Home.ipa
+    artifacts:
+      - SEZAM-Smart-Home.ipa
